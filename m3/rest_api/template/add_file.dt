@@ -1,0 +1,141 @@
+-void css(string file)
+    link(rel= 'stylesheet', type='text/css', href='styles/#{file}.css')
+
+doctype html
+html
+    head
+        title Add File
+        :css 
+            body {
+                font-family: "Lato", sans-serif;
+            }
+
+            .sidenav {
+                height: 100%;
+                width: 200px;
+                position: fixed;
+                z-index: 1;
+                top: 0;
+                left: 0;
+                background-color: #111;
+                overflow-x: hidden;
+                padding-top: 20px;
+            }
+
+            .sidenav a {
+                padding: 6px 6px 6px 32px;
+                text-decoration: none;
+                font-size: 25px;
+                color: #818181;
+                display: block;
+            }
+
+            .sidenav a:hover {
+                color: #f1f1f1;
+            }
+
+            .main {
+                margin-left: 200px;
+                /* Same as the width of the sidenav */
+                height: 100%;
+                width: 100%;
+                display: flex;
+                position: fixed;
+                align-items: center;
+                justify-content: center;
+            }
+
+            @media screen and (max-height: 450px) {
+                .sidenav {
+                    padding-top: 15px;
+                }
+
+                .sidenav a {
+                    font-size: 18px;
+                }
+            }
+
+            .fcc-btn {
+                background-color: #199319;
+                color: white;
+                padding: 15px 25px;
+                text-decoration: none;
+            }
+
+            .fcc-btn:hover {
+                background-color: #223094;
+            }
+
+        :javascript
+            function submitForm(event) {
+                event.preventDefault();
+                const formData = new FormData(event.target);
+                let url = "http://localhost:8080/api/v1/add_file";
+                const fileData = {};
+                formData.forEach((value, key) => (fileData[key] = value));
+                let data = {};
+                data.userEmail = fileData["userEmail"];
+                data.fileName = fileData["binData"].name;
+ 
+                var file = fileData["binData"];
+                var reader = new FileReader();
+                reader.readAsArrayBuffer(file);
+ 
+                reader.addEventListener('load', (e) => {
+                    let array = new Uint8Array(e.target.result);
+                    data.binData = [];
+                    array.forEach((elem) => {
+                        data.binData.push(elem);
+                    })
+                    console.log(data);
+                    console.log(JSON.stringify(data));
+                    fetch(url, {
+                        method: "POST",
+                        body: JSON.stringify(data),
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    })
+                    .then((response) =>{ 
+                        if(response.status === 400 || response.status === 500)
+                            throw new SyntaxError("Empty file");
+
+                        return response.json();
+                    })
+                    .then((data) => {
+                        alert("Success");
+                        console.log("Success:", data);
+                    })
+                    .catch((error) => {
+                        alert(error);
+                        console.error("Error:", error);
+                    });
+                })
+            }
+
+    body
+        <div class="sidenav">
+            <a href="http://localhost:8080/home/file">File</a>
+            <a href="http://localhost:8080/home/url">Url</a>
+        </div>
+
+        <div class="main">
+            <a class="fcc-btn" href="http://localhost:8080/home/file/add_file">Add file</a>
+            <a class="fcc-btn" href="http://localhost:8080/home/file/user_files">User Files</a>
+            <a class="fcc-btn" href="http://localhost:8080/home/file/file_info">File Info</a>
+            <a class="fcc-btn" href="http://localhost:8080/home/file/delete_file">Delete File</a>
+            <div>
+                <form onsubmit="submitForm(event)">
+                    <label for="binData">Select File:</label>
+                    <input type="file" id="binData" name="binData">
+                    <br>
+                    <label for="fileName">File Name:</label>
+                    <input type="text" id="fileName" name="fileName">
+                    <br>
+                    <label for="userEmail">User Email:</label>
+                    <input type="text" id="userEmail" name="userEmail">
+                    <br>
+                    <input type="submit" value="Upload File">
+                </form>
+            </div>
+        </div>  

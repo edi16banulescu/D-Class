@@ -1,0 +1,127 @@
+-void css(string file)
+  link(rel= 'stylesheet', type='text/css', href='styles/#{file}.css')
+
+doctype html
+html
+  head
+    title LOGIN
+    :css 
+      body {
+          min-height: 100%;
+          position: relative;
+          padding-bottom: 3rem;
+          margin: 0;
+          padding: 0;
+          text-align: center;
+          width: 100%;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(170deg, rgba(49, 57, 73, 0.8) 20%, rgba(49, 57, 73, 0.5) 20%, rgba(49, 57, 73, 0.5) 35%, rgba(41, 48, 61, 0.6) 35%, rgba(41, 48, 61, 0.8) 45%, rgba(31, 36, 46, 0.5) 45%, rgba(31, 36, 46, 0.8) 75%, rgba(49, 57, 73, 0.5) 75%), linear-gradient(45deg, rgba(20, 24, 31, 0.8) 0%, rgba(41, 48, 61, 0.8) 50%, rgba(82, 95, 122, 0.8) 50%, rgba(133, 146, 173, 0.8) 100%) #313949;
+          font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+      }
+
+      .fcc-btn {
+          background: linear-gradient(-30deg, #0b1b3d 50%, #08142b 50%);
+          padding: 20px 40px;
+          height: 60px;
+          width: 120px;
+          margin: 12px;
+          display: inline-block;
+          -webkit-transform: translate(0%, 0%);
+                  transform: translate(0%, 0%);
+          overflow: hidden;
+          color: #d4e0f7;
+          font-size: 20px;
+          letter-spacing: 2.5px;
+          text-align: center;
+          text-transform: uppercase;
+          text-decoration: none;
+          -webkit-box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+                  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      }
+
+      .fcc-btn:hover {
+          background-color: #223094;
+      }
+
+      input[type=text] {
+        width: 30%;
+        margin: 8px 0;
+        padding: 12px 20px;
+        display: inline-block;
+        border: 2px solid green;
+        box-sizing: border-box;
+      }
+
+      label {
+        color: white;
+      }
+
+      title {
+        color: white;
+      }
+
+    :javascript
+      function submitForm(event) {
+        event.preventDefault();
+        const url = "http://localhost:8080/api/v1/login";
+        const formData = new FormData(event.target);
+        const data = {};
+        formData.forEach((value, key) => (data[key] = value));
+        console.log(data);
+        fetch(url, {
+          method: "POST",
+          body: JSON.stringify(data),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          if(response.status === 400 || response.status === 401 || response.status === 500) {
+            throw new SyntaxError('Bad credentials');
+          }
+
+          // check the response status
+          if(response.status === 200) {
+              // set the authenticated cookie
+              setCookie('authenticated', 'true')
+          }
+
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Success:", data);
+          window.location.href = 'http://localhost:8080/home';
+        })
+        .catch((error) => {
+          alert(error);
+          console.error("Error:", error);
+        });
+      }
+
+      function setCookie(name, value) {
+        const d = new Date();
+        d.setTime(d.getTime() + (1*24*60*60*1000));
+        const expires = "expires="+ d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";domain=;path=/";
+      }
+
+      function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+          return parts.pop().split(';').shift();
+        }
+      }
+
+  body
+    h1 Login
+    <form onsubmit="submitForm(event)">
+      <label for="userEmail">User email:</label><br>
+      <input type="text" id="userEmail" name="userEmail"></br>
+      <label for="password:">Password:</label><br>
+      <input type="text" name="password"></br>
+      <button class="fcc-btn" type="submit">Login</button>
+    </form>
+
+  </form>
